@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Drive" ALTER COLUMN "rootUUID" DROP NOT NULL;

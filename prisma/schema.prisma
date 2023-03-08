@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  uuid          String  @id @default(uuid())
+  username      String  @unique
+  password_hash String
+  password_salt String
+  refresh_token String?
+  Drive         Drive[]
+}
+
+model Drive {
+  uuid         String   @id @default(uuid())
+  title        String
+  owner        User     @relation(fields: [ownerUUID], references: [uuid])
+  ownerUUID    String
+  rootUUID     String?
+  allowedTypes String[] @default([])
+  maxFileSize  Int      @default(0)
+  Folder       Folder[]
+
+  @@unique([title, ownerUUID], name: "unique_title_ownerUUID")
+}
+
+model Folder {
+  uuid       String   @id @default(uuid())
+  title      String
+  parent     Folder?  @relation("ChildToParent", fields: [parentUUID], references: [uuid])
+  children   Folder[] @relation("ChildToParent")
+  parentUUID String?
+  drive      Drive    @relation(fields: [driveUUID], references: [uuid])
+  driveUUID  String
+  File       File[]
+
+  @@unique([title, parentUUID], name: "unique_title_parentUUID")
+}
+
+model File {
+  uuid          String   @id @default(uuid())
+  title         String
+  ext           String
+  date_uploaded DateTime @default(now())
+  date_updated  DateTime @default(now())
+  size          Int
+  physical_path String?
+  folder        Folder   @relation(fields: [folderUUID], references: [uuid])
+  folderUUID    String
+}

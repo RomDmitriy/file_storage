@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Folder" ALTER COLUMN "parentUUID" DROP NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "Folder" ADD CONSTRAINT "Folder_parentUUID_fkey" FOREIGN KEY ("parentUUID") REFERENCES "Folder"("uuid") ON DELETE SET NULL ON UPDATE CASCADE;
