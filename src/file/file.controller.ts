@@ -13,20 +13,18 @@ export class FileController {
     /**
      * Получить файл
      * @param driveUUID - UUID диска
-     * @param folderUUID - UUID папки
      * @param fileUUID - UUID файла
      * @returns Файл
      */
-    @Get('data/:drive_uuid/:folder_uuid?/:file_uuid')
+    @Get('data/:drive_uuid/:file_uuid')
     @UseGuards(AuthGuard('jwt'))
     async getFile(
         @Req() req: Request,
         @Res() res: Response,
         @Param('drive_uuid') driveUUID: string,
-        @Param('folder_uuid') folderUUID: string = '/',
         @Param('file_uuid') fileUUID: string,
     ): Promise<void | HttpException> {
-        return this.fileService.getFile(req.user['uuid'], driveUUID, folderUUID, fileUUID, res);
+        return this.fileService.getFile(req.user['uuid'], driveUUID, fileUUID, res);
     }
 
     /**
@@ -34,7 +32,7 @@ export class FileController {
      * @param driveUUID - UUID диска
      * @param fileUUID - UUID файла
      */
-    @Get(':drive_uuid/:file_uuid')
+    @Get('info/:drive_uuid/:file_uuid')
     @UseGuards(AuthGuard('jwt'))
     async getFileInfo(
         @Req() req: Request,

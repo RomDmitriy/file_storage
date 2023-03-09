@@ -186,7 +186,7 @@ export class FileService {
         // берём случайный (почти) сервер
         const serverPath =
             pathToServers[Math.floor(Math.random() * pathToServers.length)];
-        // создаём путь
+        // собираем путь
         const path =
             serverPath +
             '/' +
@@ -250,7 +250,7 @@ export class FileService {
                 date_uploaded: true,
                 date_updated: true,
                 size: true,
-                folder: {
+                Folder: {
                     select: {
                         driveUUID: true
                     }
@@ -259,7 +259,7 @@ export class FileService {
         });
 
         // если папка принадлежит другому диску
-        if (file.folder.driveUUID !== driveUUID) throw new NotFoundException('Файл не найден.');
+        if (file.Folder.driveUUID !== driveUUID) throw new NotFoundException('Файл не найден.');
 
         // возвращаем информацию о файле
         return {
@@ -276,6 +276,7 @@ export class FileService {
      * 
      * Внимание! В этом методе нет никаких проверок. Использовать сугубо в рекурсивных вызовах.
      * @param filesUUID - массив UUID файлов
+     * @returns размер файлов в байтах
      */
     async getFilesSize(filesUUID: string[]): Promise<number> {
         const sizes = await this.prismaService.file.findMany({
@@ -302,7 +303,6 @@ export class FileService {
     async getFile(
         userUUID: string,
         driveUUID: string,
-        folderUUID: string,
         fileUUID: string,
         res: Response,
     ): Promise<void | HttpException> {
@@ -320,38 +320,36 @@ export class FileService {
         // если диск с таким UUID и таким владельцем не найден
         if (!drive) throw new NotFoundException('Диск не найден.');
 
-        // если нужная папка это корень
-        if (folderUUID === '/') folderUUID = drive.rootUUID;
-
-        // получаем папку + файл
-        const logicalFolder = await this.prismaService.folder.findFirst({
+        // получаем файл + папку
+        const logicalFile = await this.prismaService.file.findFirst({
             where: {
-                uuid: folderUUID,
+                uuid: fileUUID,
             },
             select: {
-                File: {
+                Folder: {
                     select: {
-                        physical_path: true,
-                        folderUUID: true,
-                        uuid: true,
-                    },
+                        driveUUID: true
+                    }
                 },
+                physical_path: true,
+                folderUUID: true,
             },
         });
 
-        // если не смогли найти папку
-        if (!logicalFolder) throw new NotFoundException('Папка не найдена.');
+        // если диск файла и запрашиваемый диск не совпадают
+        if (driveUUID !== logicalFile.Folder.driveUUID)
+            throw new NotFoundException('Диск не найден.');
         // если не смогли найти файл
-        if (logicalFolder.File.length === 0)
+        if (!logicalFile)
             throw new NotFoundException('Файл не найден.');
 
         // берём файл
         const file = createReadStream(
-            logicalFolder.File[0].physical_path +
+            logicalFile.physical_path +
                 '/' +
                 getFilename(
-                    logicalFolder.File[0].folderUUID,
-                    logicalFolder.File[0].uuid,
+                    logicalFile.folderUUID,
+                    fileUUID,
                 ),
         );
 

@@ -50,6 +50,6 @@ model File {
   date_updated  DateTime @default(now())
   size          Int
   physical_path String?
-  folder        Folder   @relation(fields: [folderUUID], references: [uuid], onDelete: Cascade)
+  Folder        Folder   @relation(fields: [folderUUID], references: [uuid], onDelete: Cascade)
   folderUUID    String
 }
