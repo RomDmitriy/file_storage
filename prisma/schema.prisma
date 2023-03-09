@@ -19,7 +19,7 @@ model User {
 model Drive {
   uuid         String   @id @default(uuid())
   title        String
-  owner        User     @relation(fields: [ownerUUID], references: [uuid])
+  owner        User     @relation(fields: [ownerUUID], references: [uuid], onDelete: Cascade)
   ownerUUID    String
   rootUUID     String?
   allowedTypes String[] @default([])
@@ -32,10 +32,10 @@ model Drive {
 model Folder {
   uuid       String   @id @default(uuid())
   title      String
-  parent     Folder?  @relation("ChildToParent", fields: [parentUUID], references: [uuid])
+  parent     Folder?  @relation("ChildToParent", fields: [parentUUID], references: [uuid], onDelete: Cascade)
   children   Folder[] @relation("ChildToParent")
   parentUUID String?
-  drive      Drive    @relation(fields: [driveUUID], references: [uuid])
+  drive      Drive    @relation(fields: [driveUUID], references: [uuid], onDelete: Cascade)
   driveUUID  String
   File       File[]
 
@@ -50,6 +50,6 @@ model File {
   date_updated  DateTime @default(now())
   size          Int
   physical_path String?
-  folder        Folder   @relation(fields: [folderUUID], references: [uuid])
+  folder        Folder   @relation(fields: [folderUUID], references: [uuid], onDelete: Cascade)
   folderUUID    String
 }

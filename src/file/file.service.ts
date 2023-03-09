@@ -384,7 +384,8 @@ export class FileService {
         });
 
         // если файл не найден
-        if (!logicalFile) throw new NotFoundException('Файл или диск не найдены.');
+        if (!logicalFile) 
+            return new NotFoundException('Файл или диск не найдены.');
 
         // для рекурсивных вызовов проверка ненужна, так как она была пройдена в вызывающей функции
         if (!skipValidation) {

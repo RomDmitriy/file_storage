@@ -116,21 +116,15 @@ export class DriveService {
                 ownerUUID: userUUID
             },
             select: {
-                Folder: {
-                    select: {
-                        uuid: true
-                    }
-                }
+                rootUUID: true
             }
         });
 
         // если диск не найден
         if (!drive) throw new NotFoundException('Диск не найден.');
 
-        // Рекурсивно чистим папки
-        drive.Folder.forEach(async folder => {
-            await this.folderService.deleteFolder(userUUID, driveUUID, folder.uuid, true);
-        });
+        // удаляем все папки (в том числе и корень)
+        await this.folderService.deleteFolder(userUUID, driveUUID, drive.rootUUID, true);
 
         // удаляем сам диск
         await this.prismaService.drive.delete({

@@ -331,7 +331,7 @@ export class FolderService {
             await this.deleteFolder(userUUID, driveUUID, folder.uuid, true);
         });
 
-        // если мы зачищаем не корень
+        // если мы зачищаем не корень (или корень тоже удаляем)
         if (!isRoot) {
             // удаляем папку, которую мы удаляли изначально
             await this.prismaService.folder
