@@ -383,7 +383,7 @@ export class FileService {
 
         // если файл не найден
         if (!logicalFile) 
-            return new NotFoundException('Файл или диск не найдены.');
+            throw new NotFoundException('Файл или диск не найдены.');
 
         // для рекурсивных вызовов проверка ненужна, так как она была пройдена в вызывающей функции
         if (!skipValidation) {
@@ -429,17 +429,22 @@ export class FileService {
                 getFilename(logicalFile.folderUUID, fileUUID),
             (err) => {
                 if (err)
-                    return new InternalServerErrorException(
+                    throw new InternalServerErrorException(
                         'Ошибка при удалении файла.',
                     );
             },
         );
 
         // удаляем логический файл
-        await this.prismaService.file.delete({
-            where: {
-                uuid: fileUUID,
-            },
-        });
+        //
+        // Удаляем файл только если у нас запрос на удаление конкретного файла.
+        // При рекурсивном удалении файл будет удалён через каскад.
+        if (!skipValidation) {
+            await this.prismaService.file.delete({
+                where: {
+                    uuid: fileUUID,
+                },
+            });
+        }
     }
 }

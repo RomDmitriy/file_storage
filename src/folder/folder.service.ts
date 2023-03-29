@@ -334,15 +334,20 @@ export class FolderService {
         // если мы зачищаем не корень (или корень тоже удаляем)
         if (!isRoot) {
             // удаляем папку, которую мы удаляли изначально
-            await this.prismaService.folder
-                .delete({
-                    where: {
-                        uuid: folderUUID,
-                    },
-                })
-                .catch(() => {
-                    return new NotFoundException('Папка не найдена.');
-                });
+            //
+            // Удаляем папку только если у нас запрос на удаление конкретной папки.
+            // При рекурсивном удалении папка будет удалена через каскад.
+            if (!skipValidation) {
+                await this.prismaService.folder
+                    .delete({
+                        where: {
+                            uuid: folderUUID,
+                        },
+                    })
+                    .catch(() => {
+                        throw new NotFoundException('Папка не найдена.');
+                    });
+            }
         }
     }
 }
